@@ -1,7 +1,5 @@
 use cloudproof::reexport::crypto_core::bytes_ser_de::Serializable;
-use cosmian_cover_crypt::{
-    abe_policy::AccessStructure, api::Covercrypt, MasterPublicKey, MasterSecretKey,
-};
+use cosmian_cover_crypt::{api::Covercrypt, MasterPublicKey, MasterSecretKey};
 use cosmian_kmip::kmip_2_1::{
     kmip_data_structures::{KeyBlock, KeyMaterial, KeyValue},
     kmip_objects::{Object, ObjectType},
@@ -88,7 +86,7 @@ pub fn create_master_keypair(
 
 fn create_master_private_key_object(
     key: &[u8],
-    policy: &AccessStructure,
+    policy: &MasterSecretKey,
     attributes: Option<&Attributes>,
     master_public_key_uid: &str,
 ) -> Result<Object, CryptoError> {
@@ -128,7 +126,7 @@ fn create_master_private_key_object(
 /// see `cover_crypt_unwrap_master_public_key` for the reverse operation
 fn create_master_public_key_object(
     key: &[u8],
-    policy: &AccessStructure,
+    policy: &MasterSecretKey,
     attributes: Option<&Attributes>,
     master_private_key_uid: &str,
 ) -> Result<Object, CryptoError> {
@@ -189,7 +187,7 @@ pub fn covercrypt_keys_from_kmip_objects(
 }
 
 pub fn kmip_objects_from_covercrypt_keys(
-    policy: &AccessStructure,
+    policy: &MasterSecretKey,
     msk: &MasterSecretKey,
     mpk: &MasterPublicKey,
     msk_obj: KmipKeyUidObject,

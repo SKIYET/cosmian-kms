@@ -61,7 +61,10 @@ impl CovercryptDecryption {
         let _encrypted_block = de.finalize();
         let ctx = (
             encrypted_header.encapsulation.clone(),
-            encrypted_header.encrypted_metadata.clone().expect("todo"),
+            encrypted_header
+                .encrypted_metadata
+                .clone()
+                .expect("Error returning encrypted header metadata"),
         );
 
         let header = encrypted_header
@@ -83,17 +86,17 @@ impl CovercryptDecryption {
             <std::option::Option<zeroize::Zeroizing<std::vec::Vec<u8>>> as Clone>::clone(
                 &cleartext
             )
-            .expect("todo")
+            .expect("Could not get cleartext header")
             .len(),
             encrypted_bytes.len(),
         );
 
         Ok((
-            header.expect("todo"),
+            header.expect("Could not get header"),
             <std::option::Option<zeroize::Zeroizing<std::vec::Vec<u8>>> as Clone>::clone(
                 &cleartext,
             )
-            .expect("todo"),
+            .expect("Could not get cleartext header"),
         ))
     }
 
@@ -156,7 +159,10 @@ impl CovercryptDecryption {
             };
             let ctx = (
                 encrypted_header.encapsulation.clone(),
-                encrypted_header.encrypted_metadata.clone().expect("todo"),
+                encrypted_header
+                    .encrypted_metadata
+                    .clone()
+                    .expect("Error returning encrypted header metadata"),
             );
 
             let header = encrypted_header
@@ -181,13 +187,16 @@ impl CovercryptDecryption {
                 encrypted_header.length(),
             );
 
-            ser.write_vec(&cleartext.expect("todo"))?;
+            ser.write_vec(&cleartext.expect("Could not get cleartext header"))?;
         }
 
         let cleartext_header = cleartext_header
             .ok_or_else(|| CryptoError::Kmip("unable to recover any header".to_owned()))?;
 
-        Ok((cleartext_header.expect("todo"), ser.finalize()))
+        Ok((
+            cleartext_header.expect("Could not get cleartext header"),
+            ser.finalize(),
+        ))
     }
 }
 
@@ -210,7 +219,9 @@ impl DecryptionSystem for CovercryptDecryption {
         let encrypted_header: EncryptedHeader = EncryptedHeader::read(&mut de)?;
         let _ctx = (
             encrypted_header.encapsulation,
-            encrypted_header.encrypted_metadata.expect("todo"),
+            encrypted_header
+                .encrypted_metadata
+                .expect("Error returning encrypted header metadata"),
         );
 
         let (header, plaintext) = if let Some(CryptographicParameters {

@@ -1,9 +1,8 @@
 use cloudproof::reexport::{crypto_core::bytes_ser_de::Serializable, fpe::core::KEY_LENGTH};
 use cosmian_cover_crypt::{
-    abe_policy::AccessStructure,
     api::Covercrypt,
     traits::{PkeAc, AE},
-    AccessPolicy, EncryptedHeader, Error, MasterPublicKey,
+    AccessPolicy, EncryptedHeader, Error, MasterPublicKey, MasterSecretKey,
 };
 use cosmian_kmip::{
     kmip_2_1::{
@@ -27,7 +26,7 @@ pub struct CoverCryptEncryption {
     cover_crypt: Covercrypt,
     public_key_uid: String,
     public_key_bytes: Zeroizing<Vec<u8>>,
-    policy: AccessStructure,
+    policy: MasterSecretKey,
 }
 
 const LENGTH: usize = 0;
