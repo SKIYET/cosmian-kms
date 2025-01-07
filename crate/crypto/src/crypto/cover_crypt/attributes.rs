@@ -19,35 +19,8 @@ pub fn policy_as_vendor_attribute(
     Ok(VendorAttribute {
         vendor_identification: VENDOR_ID_COSMIAN.to_owned(),
         attribute_name: VENDOR_ATTR_COVER_CRYPT_POLICY.to_owned(),
-        attribute_value: Vec::<u8>::try_from(
-            policy.access_structure.dimensions().collect::<String>(),
-        )
-        .map_err(|e| {
-            CryptoError::Kmip(format!(
-                "failed convert the CoverCrypt policy to bytes: {e}"
-            ))
-        })?,
+        attribute_value: Vec::<u8>::from(policy.access_structure.dimensions().collect::<String>()),
     })
-}
-
-/// Extract an `CoverCrypt` policy from attributes
-pub fn policy_from_attributes(attributes: &Attributes) -> Result<MasterSecretKey, CryptoError> {
-    attributes
-        .get_vendor_attribute_value(VENDOR_ID_COSMIAN, VENDOR_ATTR_COVER_CRYPT_POLICY)
-        .map_or_else(
-            || {
-                Err(CryptoError::Kmip(
-                    "the attributes do not contain a CoverCrypt Policy".to_owned(),
-                ))
-            },
-            |bytes| {
-                parse(bytes).map_err(|e| {
-                    CryptoError::Kmip(format!(
-                        "failed deserializing the CoverCrypt Policy from the attributes: {e}"
-                    ))
-                })
-            },
-        )
 }
 
 /// Add or replace an `CoverCrypt` policy in attributes in place
@@ -79,12 +52,9 @@ pub fn attributes_as_vendor_attribute(
     Ok(VendorAttribute {
         vendor_identification: VENDOR_ID_COSMIAN.to_owned(),
         attribute_name: VENDOR_ATTR_COVER_CRYPT_ATTR.to_owned(),
-        attribute_value: Vec::<u8>::try_from(
+        attribute_value: Vec::<u8>::from(
             attributes.access_structure.dimensions().collect::<String>(),
-        )
-        .map_err(|e| {
-            CryptoError::Kmip(format!("failed serializing the CoverCrypt attributes: {e}"))
-        })?,
+        ),
     })
 }
 

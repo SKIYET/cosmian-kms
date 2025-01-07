@@ -1,11 +1,14 @@
 use cloudproof::reexport::{
-    crypto_core::bytes_ser_de::{Deserializer, Serializable, Serializer},
+    crypto_core::{
+        bytes_ser_de::{Deserializer, Serializable, Serializer},
+        CryptoCoreError,
+    },
     fpe::core::KEY_LENGTH,
 };
 use cosmian_cover_crypt::{
     api::Covercrypt,
     traits::{PkeAc, AE},
-    CleartextHeader, EncryptedHeader, Error, UserSecretKey,
+    CleartextHeader, EncryptedHeader, Error, UserSecretKey, XEnc,
 };
 use cosmian_kmip::kmip_2_1::{
     kmip_objects::Object,
@@ -59,22 +62,25 @@ impl CovercryptDecryption {
         let encrypted_header = EncryptedHeader::read(&mut de)
             .map_err(|e| CryptoError::Kmip(format!("Bad or corrupted encrypted data: {e}")))?;
         let _encrypted_block = de.finalize();
-        let ctx = (
+        let ctx: (XEnc, Vec<u8>) = (
             encrypted_header.encapsulation.clone(),
             encrypted_header
                 .encrypted_metadata
-                .clone()
-                .expect("Error returning encrypted header metadata"),
+                .ok_or(CryptoCoreError::DeserializationEmptyError)?,
         );
 
-        let header = encrypted_header
+        let mut de = Deserializer::new(encrypted_bytes);
+
+        let eh = EncryptedHeader::read(&mut de);
+
+        let header = eh?
             .decrypt(&self.cover_crypt, user_decryption_key, aead)
             .map_err(|e| CryptoError::Kmip(e.to_string()))?;
 
         let cleartext = Zeroizing::from(
             <cosmian_cover_crypt::api::Covercrypt as PkeAc<KEY_LENGTH, E>>::decrypt(
                 &self.cover_crypt,
-                &user_decryption_key,
+                user_decryption_key,
                 &ctx,
             )
             .map_err(|e| CryptoError::Kmip(e.to_string()))?,

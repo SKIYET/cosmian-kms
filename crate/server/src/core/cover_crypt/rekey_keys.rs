@@ -185,8 +185,7 @@ pub(crate) async fn update_master_keys(
 
     let (mut msk, mut mpk) = covercrypt_keys_from_kmip_objects(&msk_obj.1, &mpk_obj.1)?;
     mutator(&mut policy, &mut msk, &mut mpk)?;
-    let (msk_obj, mpk_obj) =
-        kmip_objects_from_covercrypt_keys(&policy, &msk, &mpk, msk_obj, mpk_obj)?;
+    let (msk_obj, mpk_obj) = kmip_objects_from_covercrypt_keys(&policy, &msk, &mpk, msk_obj)?;
 
     import_rekeyed_master_keys(server, owner, params, msk_obj.clone(), mpk_obj.clone()).await?;
 

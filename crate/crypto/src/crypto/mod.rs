@@ -20,18 +20,18 @@ pub mod symmetric;
 pub mod wrap;
 
 pub trait EncryptionSystem {
-    fn encrypt<E: AE<KEY_LENGTH, Error = Error>>(
+    fn encrypt<const KEY_LENGTH: usize, E: AE<KEY_LENGTH, Error = cosmian_cover_crypt::Error>>(
         &self,
         request: &Encrypt,
     ) -> Result<EncryptResponse, CryptoError>;
 }
 
 impl<T: EncryptionSystem + ?Sized> EncryptionSystem for Box<T> {
-    fn encrypt<E: AE<KEY_LENGTH, Error = Error>>(
+    fn encrypt<const KEY_LENGTH: usize, E: AE<KEY_LENGTH, Error = cosmian_cover_crypt::Error>>(
         &self,
         request: &Encrypt,
     ) -> Result<EncryptResponse, CryptoError> {
-        (**self).encrypt::<E>(request)
+        (**self).encrypt::<KEY_LENGTH, E>(request)
     }
 }
 

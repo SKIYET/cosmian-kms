@@ -15,7 +15,7 @@ use tracing::{debug, trace};
 use zeroize::Zeroizing;
 
 use super::attributes::access_policy_as_vendor_attribute;
-use crate::{crypto::cover_crypt::attributes::policy_from_attributes, error::CryptoError};
+use crate::error::CryptoError;
 
 // ------------------------------------------------------------------------------
 // ------------------------- setup parameters for KMIP --------------------------
@@ -83,7 +83,7 @@ fn prepare_symmetric_key(
 ) -> Result<CoverCryptSymmetricKey, CryptoError> {
     trace!("Starting create secret key");
 
-    let (public_key_bytes, public_key_attributes) = public_key_response
+    let (public_key_bytes, _public_key_attributes) = public_key_response
         .object
         .key_block()?
         .key_bytes_and_attributes()?;
@@ -93,12 +93,6 @@ fn prepare_symmetric_key(
             "cover crypt: failed deserializing the master public key: {e}"
         ))
     })?;
-
-    let _policy = policy_from_attributes(public_key_attributes.ok_or_else(|| {
-        CryptoError::Kmip(
-            "the master public key does not have attributes with the Policy".to_owned(),
-        )
-    })?)?;
 
     let (sk, sk_enc) = cover_crypt
         .encaps(&public_key, access_policy)
